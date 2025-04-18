@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive des Bureaux du CBC</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .map-container {
+            flex: 1;
+            min-width: 50%;
+            height: 100%;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .info-container {
+            flex: 1;
+            min-width: 50%;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f5f5f5;
+        }
+        .office-info {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .office-info h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .image-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            margin: 15px 0;
+            padding-bottom: 10px;
+        }
+        .image-container img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .image-container img:hover {
+            transform: scale(1.05);
+        }
+        p, ul, li {
+            line-height: 1.6;
+            color: #333;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .title-container {
+            margin-bottom: 20px;
+        }
+        .title-container h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .title-container p {
+            color: #7f8c8d;
+            margin-top: 0;
+        }
+        .instruction {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .contact-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        .missions-section {
+            margin-top: 15px;
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #ffa000;
+        }
+        .missions-section h4 {
+            margin-top: 0;
+            color: #795548;
+        }
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Carte à gauche -->
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        
+        <!-- Informations à droite -->
+        <div class="info-container">
+            <div class="title-container">
+                <h1>Conseil Burkinabé des Chargeurs (CBC)</h1>
+                <p>Réseau des bureaux en Afrique de l'Ouest</p>
+            </div>
+            
+            <div class="instruction">
+                <p><strong>Cliquez sur les marqueurs</strong> de la carte pour découvrir les informations sur chaque bureau du CBC.</p>
+            </div>
+            
+            <div id="ouagadougou" class="office-info">
+                <h2>CBC - Siège social (Ouagadougou)</h2>
+                <div class="image-container">
+                    <img src="image/siege/siege.jpg" alt="CBC Siège Ouagadougou - image 1">
+                    <img src="image/siege/siege2.png" alt="CBC Siège Ouagadougou - image 1">
+                    <img src="image/siege/siege4.png" alt="CBC Siège Ouagadougou - image 1">
+                    
+                </div>
+                <div class="contact-info">
+                    <h4>Coordonnées</h4>
+                    <p><strong>Localisation :</strong> Ouagadougou, en face du siège du FESPACO, près du rond-point de la Bataille du Rail.</p>
+                    <p><strong>Adresse postale :</strong> 01 BP 1771, Avenue Kadiogo, Ouagadougou, Burkina Faso.</p>
+                    <p><strong>Téléphones :</strong> (226) 25 30 25 08 / 25 30 62 11 / 25 30 88 15 / 25 31 07 71</p>
+                </div>
+                <h3>Direction Régionale du Centre (DRC)</h3>
+                <p><strong>Zones d'intervention :</strong></p>
+                <ul>
+                    <li>Ouaga Gare (gare ferroviaire)</li>
+                    <li>Ouagarinter (gare routière)</li>
+                    <li>Postes frontaliers de Dakola (frontière Ghana), Cinkansé-Bittou (frontière Togo), et Nadiagou (frontière Bénin-Togo)</li>
+                </ul>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs</li>
+                        <li>Suivi des flux de marchandises à l'import et à l'export</li>
+                        <li>Collecte et traitement des données via le logiciel SYGESTRAN</li>
+                        <li>Émission des Bordereaux de Suivi du Trafic (BST)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="aeroport" class="office-info">
+                <h2>CBC - aéroport (aéroport)</h2>
+                <div class="image-container">
+                    <img src="image/aeroport/aeroport.png" alt="Ouagadougou - image 1">
+                    <img src="image2.png" alt="Ouagadougou - image 2">
+                    <img src="image3.png" alt="Ouagadougou - image 3">
+                </div>
+                <p>Bureau annexe situé à la gare ferroviaire d'Ouagadougou pour faciliter le transport des marchandises par voie ferrée.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs utilisant le transport ferroviaire</li>
+                        <li>Suivi des marchandises en transit</li>
+                        <li>Facilitation des procédures de chargement et déchargement</li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div id="bva" class="office-info">
+                <h2>CBC - BVA (BVA)</h2>
+                <div class="image-container">
+                    <img src="image/bva/bva.png" alt="Ouagadougou - image 1">
+                    <img src="image/bva/bva2.png" alt="Ouagadougou - image 1">
+                    <img src="image/bva/bva3.png" alt="Ouagadougou - image 1">
+                    
+                </div>
+                <p>Bureau annexe situé à la gare ferroviaire d'Ouagadougou pour faciliter le transport des marchandises par voie ferrée.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs utilisant le transport ferroviaire</li>
+                        <li>Suivi des marchandises en transit</li>
+                        <li>Facilitation des procédures de chargement et déchargement</li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div id="ouaga-gare" class="office-info">
+                <h2>CBC - Ouaga Gare (Gare ferroviaire)</h2>
+                <div class="image-container">
+                    <img src="image1.png" alt="Ouagadougou - image 1">
+                    <img src="image2.png" alt="Ouagadougou - image 2">
+                    <img src="image3.png" alt="Ouagadougou - image 3">
+                </div>
+                <p>Bureau annexe situé à la gare ferroviaire d'Ouagadougou pour faciliter le transport des marchandises par voie ferrée.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs utilisant le transport ferroviaire</li>
+                        <li>Suivi des marchandises en transit</li>
+                        <li>Facilitation des procédures de chargement et déchargement</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="ouagarinter" class="office-info">
+                <h2>CBC - Ouagarinter (Gare routière)</h2>
+                <div class="image-container">
+                    <img src="image/Ouagainter/Ouagainter.png" alt="Ouagadougou - image 1">
+                    <img src="image2.png" alt="Ouagadougou - image 2">
+                    <img src="image3.png" alt="Ouagadougou - image 3">
+                </div>
+                <p>Bureau annexe situé à la gare routière internationale d'Ouagadougou pour faciliter le transport routier des marchandises.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs utilisant le transport routier</li>
+                        <li>Coordination des départs et arrivées des camions</li>
+                        <li>Suivi administratif des marchandises</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="dakola" class="office-info">
+                <h2>CBC - Poste frontalier de Dakola</h2>
+                <div class="image-container">
+                    <img src="image/dakola/Dakola2.jpg" alt="dakola - image 2">
+                    <img src="image/dakola/Dakola1.jpg" alt="dakola - image 1">
+                    <img src="image/dakola/Dakola3.jpg" alt="dakola - image 3">
+                    
+                </div>
+                <p>Poste frontalier situé à la frontière avec le Ghana, relevant de la Direction Régionale du Centre.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="cinkansebitou" class="office-info">
+                <h2>CBC - Poste frontalier de Cinkansé-Bittou</h2>
+                <div class="image-container">
+                    <img src="image/cincansé.jpg" alt="CBC Cinkansé-Bittou - image 1">
+                </div>
+                <p>Poste frontalier situé à la frontière avec le Togo, relevant de la Direction Régionale du Centre.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="nadiagou" class="office-info">
+                <h2>CBC - Poste frontalier de Nadiagou</h2>
+                <div class="image-container">
+                    <img src="/api/placeholder/400/300" alt="CBC Nadiagou - image 1">
+                </div>
+                <p>Poste frontalier situé à la frontière avec le Bénin et le Togo, relevant de la Direction Régionale du Centre.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="bobo-dioulasso" class="office-info">
+                <h2>CBC - Direction Régionale de l'Ouest (Bobo-Dioulasso)</h2>
+                <div class="image-container">
+                    <img src="image/bobo/Bobo4.jpg" alt="Bobo - image 4">
+                    <img src="image/bobo/Bobo5.jpg" alt="Bobo - image 5">
+                    <img src="image/bobo/Bobo6.jpg" alt="Bobo - image 6">
+                    
+                </div>
+                <h3>Direction Régionale de l'Ouest (DRO)</h3>
+                <p><strong>Zones d'intervention :</strong></p>
+                <ul>
+                    <li>Postes frontaliers de Niangoloko (frontière Côte d'Ivoire)</li>
+                    <li>Ouessa (frontière Ghana)</li>
+                    <li>Koloko et Faramana (frontière Mali)</li>
+                </ul>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Trafic routier</li>
+                        <li>Trafic ferroviaire et information commerciale</li>
+                        <li>Assistance aux chargeurs au port sec</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="bobo-sitarail" class="office-info">
+                <h2>CBC - Direction Régionale de l'Ouest bobo SITARAIL (SITARAIL bobo)</h2>
+                <div class="image-container">
+                    <img src="image/bobositarail/bobsitarail1.jpg" alt="Ouagadougou - image 2">
+                    <img src="image/bobositarail/bobositarail2.jpg" alt="Ouagadougou - image 2">
+                    
+                    
+                </div>
+                <h3>Direction Régionale de l'Ouest (bobo SITARAIL)</h3>
+                <p><strong>Zones d'intervention :</strong></p>
+                <ul>
+                    <li>Postes frontaliers de Niangoloko (frontière Côte d'Ivoire)</li>
+                    <li>Ouessa (frontière Ghana)</li>
+                    <li>Koloko et Faramana (frontière Mali)</li>
+                </ul>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Trafic routier</li>
+                        <li>Trafic ferroviaire et information commerciale</li>
+                        <li>Assistance aux chargeurs au port sec</li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div id="niangoloko" class="office-info">
+                <h2>CBC - Poste frontalier de Niangoloko</h2>
+                <div class="image-container">
+                    <img src="image/niangoloko/Niangoloko1.jpg" alt="CBC Niangoloko - image 1">
+                    <img src="image/niangoloko/Niangoloko2.jpg" alt="CBC Niangoloko - image 2">
+                    <img src="image/niangoloko/Niangoloko4.jpg" alt="CBC Niangoloko - image 4">
+                </div>
+                <p>Poste frontalier situé à la frontière avec la Côte d'Ivoire, relevant de la Direction Régionale de l'Ouest.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier avec la Côte d'Ivoire</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="ouessa" class="office-info">
+                <h2>CBC - Poste frontalier d'Ouessa</h2>
+                <div class="image-container">
+                    <img src="image/ouessa/OUESSA2.jpg" alt="CBC Ouessa - image 2">
+                    <img src="image/ouessa/OUESSA1.jpg" alt="CBC Ouessa - image 1">
+                </div>
+                <p>Poste frontalier situé à la frontière avec le Ghana, relevant de la Direction Régionale de l'Ouest.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier avec le Ghana</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="koloko" class="office-info">
+                <h2>CBC - Poste frontalier de Koloko</h2>
+                <div class="image-container">
+                    <img src="image/koloko/Koloko7.jpg" alt="CBC Koloko - image 7">
+                    <img src="image/koloko/Koloko5.jpg" alt="CBC Koloko - image 5">
+                    <img src="image/koloko/Koloko6.jpg" alt="CBC Koloko - image 6">
+                </div>
+                <p>Poste frontalier situé à la frontière avec le Mali, relevant de la Direction Régionale de l'Ouest.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier avec le Mali</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="faramana" class="office-info">
+                <h2>CBC - Poste frontalier de Faramana</h2>
+                <div class="image-container">
+                    <img src="image/faramana/Faramana3.jpg" alt="CBC Faramana - image 1">
+                    <img src="image/faramana/Faramana2.jpg" alt="CBC Faramana - image 2">
+                    <img src="image/faramana/Faramana5.jpg" alt="CBC Faramana - image 5">
+                </div>
+                <p>Poste frontalier situé à la frontière avec le Mali, relevant de la Direction Régionale de l'Ouest.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Contrôle et vérification des documents de transport</li>
+                        <li>Assistance aux chargeurs à la frontière</li>
+                        <li>Suivi du trafic transfrontalier avec le Mali</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="abidjan" class="office-info">
+                <h2>CBC - Représentation en Côte d'Ivoire (Abidjan)</h2>
+                <div class="image-container">
+                    <img src="image/abidjan/Abidjan1.jpg" alt="CBC Abidjan - image 1">
+                   
+                    
+                </div>
+                <p>La représentation du CBC à Abidjan collabore étroitement avec le Port Autonome d'Abidjan pour renforcer la coopération et faciliter le transit des marchandises à destination et en provenance du Burkina Faso.</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs burkinabè opérant via le port d'Abidjan</li>
+                        <li>Facilitation des procédures douanières</li>
+                        <li>Suivi des marchandises en transit</li>
+                        <li>Collecte et traitement des données commerciales</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="ouangolo" class="office-info">
+                <h2>CBC - Représentation en Côte d'Ivoire (Ouangolo)</h2>
+                <div class="image-container">
+                    <img src="image2.png" alt="Ouagadougou - image 2">
+                    <img src="image3.png" alt="Ouagadougou - image 3">
+                   
+                    
+                </div>
+                <p>La représentation du CBC à Abidjan collabore étroitement avec le Port Autonome d'Abidjan pour renforcer la coopération et faciliter le transit des marchandises à destination et en provenance du Burkina Faso.</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs burkinabè opérant via le port d'Abidjan</li>
+                        <li>Facilitation des procédures douanières</li>
+                        <li>Suivi des marchandises en transit</li>
+                        <li>Collecte et traitement des données commerciales</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="sanpedro" class="office-info">
+                <h2>CBC - Représentation en Côte d'Ivoire (SAN PEDRO)</h2>
+                <div class="image-container">
+                    <img src="image/SAN PEDRO/SAN PEDRO3.jpg" alt="CBC Abidjan - image 1">
+                    <img src="image/SAN PEDRO/SAN PEDRO1.jpg" alt="CBC Abidjan - image 1">
+                    <img src="image/SAN PEDRO/SAN PEDRO2.jpg" alt="CBC Abidjan - image 1">
+                   
+                    
+                </div>
+                <p>La représentation du CBC à Abidjan collabore étroitement avec le Port Autonome d'Abidjan pour renforcer la coopération et faciliter le transit des marchandises à destination et en provenance du Burkina Faso.</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs burkinabè opérant via le port d'Abidjan</li>
+                        <li>Facilitation des procédures douanières</li>
+                        <li>Suivi des marchandises en transit</li>
+                        <li>Collecte et traitement des données commerciales</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="lome" class="office-info">
+                <h2>CBC - Représentation au Togo (Lomé)</h2>
+                <div class="image-container">
+                    <img src="image/Lome/Lome1.png" alt="Lome - image 1">
+                    <img src="image/Lome/Lome2.png" alt="Lome - image 1">
+                    <img src="image/Lome/Lome3.png" alt="Lome - image 1">
+                    
+                </div>
+                <p><strong>Siège à Lomé</strong> dans la zone portuaire, avec des bureaux annexes à Tsévié, Tabligbo et sur la Plateforme Industrielle d'Adétikopé (PIA).</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs</li>
+                        <li>Facilitation des procédures douanières</li>
+                        <li>Collecte et traitement des données</li>
+                        <li>Émission des Bordereaux de Suivi du Trafic Routier (BSTR)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="tsevie" class="office-info">
+                <h2>CBC - Bureau annexe de Tsévié (Togo)</h2>
+                <div class="image-container">
+                    <img src="/api/placeholder/400/300" alt="CBC Tsévié - image 1">
+                </div>
+                <p>Bureau annexe de la représentation du CBC au Togo, situé à Tsévié pour servir les chargeurs de cette zone.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance de proximité aux chargeurs</li>
+                        <li>Traitement des documents administratifs</li>
+                        <li>Collecte de données logistiques</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="tabligbo" class="office-info">
+                <h2>CBC - Bureau annexe de Tabligbo (Togo)</h2>
+                <div class="image-container">
+                    <img src="image/togo/Togo4.jpg" alt="CBC Tabligbo - image 1">
+                    <img src="image/togo/Togo3.jpg" alt="CBC Tabligbo - image 1">
+                    <img src="image/togo/Togo1.jpg" alt="CBC Tabligbo - image 1">
+                </div>
+                <p>Bureau annexe de la représentation du CBC au Togo, situé à Tabligbo pour servir les chargeurs de cette zone.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance de proximité aux chargeurs</li>
+                        <li>Traitement des documents administratifs</li>
+                        <li>Collecte de données logistiques</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="pia" class="office-info">
+                <h2>CBC - Bureau annexe de la Plateforme Industrielle d'Adétikopé (PIA)</h2>
+                <div class="image-container">
+                    <img src="/api/placeholder/400/300" alt="CBC PIA - image 1">
+                </div>
+                <p>Bureau annexe de la représentation du CBC au Togo, situé sur la Plateforme Industrielle d'Adétikopé (PIA) pour faciliter les activités industrielles.</p>
+                <div class="missions-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Assistance spécialisée aux opérateurs industriels</li>
+                        <li>Facilitation des échanges commerciaux</li>
+                        <li>Coordination des activités logistiques</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="tema" class="office-info">
+                <h2>CBC - Représentation au Ghana (Tema)</h2>
+                <div class="image-container">
+                    <img src="image/ghana/ghana3.png" alt="CBC Tema - image 1">
+                    <img src="image/ghana/ghana1.jpg" alt="CBC Tema - image 1">
+                    <img src="image/ghana/ghana5.png" alt="CBC Tema - image 1">
+                    
+                </div>
+                <p>La représentation du CBC à Tema participe activement aux activités portuaires et apporte une assistance aux chargeurs burkinabè utilisant les infrastructures portuaires du Ghana.</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Facilitation des procédures d'importation et d'exportation</li>
+                        <li>Suivi des marchandises à destination et en provenance du Burkina Faso</li>
+                        <li>Assistance technique aux opérateurs économiques burkinabè</li>
+                        <li>Représentation des intérêts du CBC dans les instances portuaires</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="takoradi" class="office-info">
+                <h2>CBC - Représentation au Ghana (Takoradi)</h2>
+                <div class="image-container">
+                    <img src="image2.png" alt="Ouagadougou - image 2">
+                    <img src="image3.png" alt="Ouagadougou - image 3">
+                    
+                </div>
+                <p>La représentation du CBC à Tema participe activement aux activités portuaires et apporte une assistance aux chargeurs burkinabè utilisant les infrastructures portuaires du Ghana.</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Facilitation des procédures d'importation et d'exportation</li>
+                        <li>Suivi des marchandises à destination et en provenance du Burkina Faso</li>
+                        <li>Assistance technique aux opérateurs économiques burkinabè</li>
+                        <li>Représentation des intérêts du CBC dans les instances portuaires</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="cotonou" class="office-info">
+                <h2>CBC - Représentation au Bénin (Cotonou)</h2>
+                <div class="image-container">
+                    <img src="image/cotonou/Cotonou1.jpg" alt="CBC Cotonou - image 1">
+                    <img src="image/cotonou/Cotonou5.jpg" alt="CBC Cotonou - image 1">
+                    <img src="image/cotonou/Cotonou4.jpg" alt="CBC Cotonou - image 1">
+                    
+                </div>
+                <p>La représentation du CBC à Cotonou est intégrée dans la communauté portuaire pour assister les chargeurs et coordonner les activités logistiques des opérateurs burkinabè.</p>
+                <div class="missions-section">
+                    <h4>Missions</h4>
+                    <ul>
+                        <li>Assistance aux chargeurs burkinabè opérant via le port de Cotonou</li>
+                        <li>Suivi des procédures douanières et portuaires</li>
+                        <li>Coordination avec les autorités portuaires béninoises</li>
+                        <li>Collecte et analyse des données commerciales</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <h3>Légende</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #2c3e50;"></div>
+            <span>Siège et directions régionales</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #3498db;"></div>
+            <span>Représentations à l'étranger</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #e74c3c;"></div>
+            <span>Postes frontaliers</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #2ecc71;"></div>
+            <span>Bureaux annexes</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialisation de la carte centrée sur Ouagadougou
+        const map = L.map('map').setView([8.5, -2.5], 5);
+        
+        // Ajout du fond de carte
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Création d'icônes personnalisées pour différents types de bureaux
+        const mainOfficeIcon = L.icon({
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            shadowSize: [41, 41]
+        });
+        
+        const foreignOfficeIcon = L.icon({
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            shadowSize: [41, 41]
+        });
+        
+        const borderPostIcon = L.icon({
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+            iconSize: [20, 35],
+            iconAnchor: [10, 35],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            shadowSize: [41, 41]
+        });
+        
+        const annexOfficeIcon = L.icon({
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+            iconSize: [20, 35],
+            iconAnchor: [10, 35],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            shadowSize: [41, 41]
+        });
+        
+       // Données des bureaux du CBC avec leurs types
+       const offices = [
+            // Sièges et directions régionales
+            {id: 'ouagadougou', name: 'CBC - Siège social (Ouagadougou)', coords: [12.3714, -1.5197], type: 'main'},
+            {id: 'bobo-dioulasso', name: 'CBC - Direction Régionale Ouest (Bobo-Dioulasso)', coords: [11.1787, -4.2985], type: 'main'},
+            {id: 'bobo-sitarail', name: 'CBC - Direction Régionale Ouest Bobo gare (Sitarail Bobo)', coords: [11.17847, -4.30624], type: 'main'},
+            
+            // Bureaux annexes à Ouagadougou
+            {id: 'ouaga-gare', name: 'CBC - Ouaga Gare (Gare ferroviaire)', coords: [12.3500, -1.5300], type: 'annex'},
+            {id: 'ouagarinter', name: 'CBC - Ouagarinter (Gare routière)', coords: [12.3650, -1.5050], type: 'annex'},
+            {id: 'aeroport', name: 'CBC - aeroport (aeroport)', coords: [12.35320, -1.51242], type: 'annex'},
+            {id: 'bva', name: 'CBC - BVA (BVA)', coords: [12.34313, -1.49398], type: 'annex'},
+            // Postes frontaliers - Direction Régionale du Centre
+            {id: 'dakola', name: 'CBC - Poste frontalier de Dakola (frontière Ghana)', coords: [11.1300, -0.9800], type: 'border'},
+            {id: 'cinkansebitou', name: 'CBC - Poste frontalier de Cinkansé-Bittou (frontière Togo)', coords: [11.1827, 0.3672], type: 'border'},
+            {id: 'nadiagou', name: 'CBC - Poste frontalier de Nadiagou (frontière Bénin-Togo)', coords: [11.0742, 1.0961], type: 'border'},
+            
+            // Postes frontaliers - Direction Régionale de l'Ouest
+            {id: 'niangoloko', name: 'CBC - Poste frontalier de Niangoloko (frontière Côte d\'Ivoire)', coords: [10.2840, -4.9200], type: 'border'},
+            {id: 'ouessa', name: 'CBC - Poste frontalier d\'Ouessa (frontière Ghana)', coords: [11.04131, -2.78276], type: 'border'},
+            {id: 'koloko', name: 'CBC - Poste frontalier de Koloko (frontière Mali)', coords: [11.1500, -5.6800], type: 'border'},
+            {id: 'faramana', name: 'CBC - Poste frontalier de Faramana (frontière Mali)', coords: [11.7000, -4.5000], type: 'border'},
+            
+            // Représentations à l'étranger
+            {id: 'abidjan', name: 'CBC - Représentation en Côte d\'Ivoire (Abidjan)', coords: [5.3167, -4.0333], type: 'foreign'},
+            {id: 'ouangolo', name: 'CBC - Représentation en Côte d\'Ivoire (Ouangolo)', coords: [9.96911, -5.15636], type: 'foreign'},
+            {id: 'sanpedro', name: 'CBC - Représentation en Côte d\'Ivoire (sanpedro)', coords: [4.74851, -6.6363], type: 'foreign'},
+           
+            {id: 'lome', name: 'CBC - Représentation au Togo (Lomé)', coords: [6.1304, 1.2158], type: 'foreign'},
+            {id: 'tema', name: 'CBC - Représentation au Ghana (Tema)', coords: [5.6667, -0.0167], type: 'foreign'},
+            {id: 'takoradi', name: 'CBC - Représentation au Ghana (Takoradi)', coords: [4.90269, -1.78369], type: 'foreign'},
+            {id: 'cotonou', name: 'CBC - Représentation au Bénin (Cotonou)', coords: [6.3667, 2.4333], type: 'foreign'},
+            
+            // Bureaux annexes au Togo
+            {id: 'tsevie', name: 'CBC - Bureau annexe de Tsévié (Togo)', coords: [6.4269, 1.2133], type: 'annex'},
+            {id: 'tabligbo', name: 'CBC - Bureau annexe de Tabligbo (Togo)', coords: [6.5833, 1.5000], type: 'annex'},
+            {id: 'pia', name: 'CBC - Bureau annexe de la Plateforme Industrielle d\'Adétikopé (PIA)', coords: [6.4333, 1.1667], type: 'annex'}
+        ];
+
+        // Ajout des marqueurs avec gestion des clics
+        offices.forEach(office => {
+            let icon;
+            switch(office.type) {
+                case 'main': icon = mainOfficeIcon; break;
+                case 'foreign': icon = foreignOfficeIcon; break;
+                case 'border': icon = borderPostIcon; break;
+                case 'annex': icon = annexOfficeIcon; break;
+            }
+
+            const marker = L.marker(office.coords, { icon }).addTo(map)
+                .on('click', function() {
+                    // Masquer toutes les infos
+                    document.querySelectorAll('.office-info').forEach(div => {
+                        div.style.display = 'none';
+                    });
+                    // Afficher l'info correspondante
+                    const infoDiv = document.getElementById(office.id);
+                    if (infoDiv) {
+                        infoDiv.style.display = 'block';
+                        infoDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
